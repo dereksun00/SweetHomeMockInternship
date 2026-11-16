@@ -2016,7 +2016,10 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
     }
 
     Level selectedLevel = this.home.getSelectedLevel();
+    boolean allLevelsSelection = this.home.isAllLevelsSelection();
     try {
+      // Preserve selected furniture while the selected level changes temporarily.
+      this.home.setAllLevelsSelection(true);
       int levelPage = 0;
       for (Level level : this.home.getLevels()) {
         if (level.isViewable() && levelPage++ == pageIndex) {
@@ -2029,6 +2032,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
       return NO_SUCH_PAGE;
     } finally {
       this.home.setSelectedLevel(selectedLevel);
+      this.home.setAllLevelsSelection(allLevelsSelection);
     }
   }
 
