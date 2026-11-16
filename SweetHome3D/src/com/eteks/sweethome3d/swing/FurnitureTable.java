@@ -69,6 +69,7 @@ import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JToolTip;
 import javax.swing.JTree;
+import javax.swing.JViewport;
 import javax.swing.ListSelectionModel;
 import javax.swing.Popup;
 import javax.swing.PopupFactory;
@@ -802,6 +803,8 @@ public class FurnitureTable extends JTable implements View, Printable {
       TableColumnModel oldColumnModel = getColumnModel();
       Color oldGridColor = getGridColor();
       FurnitureFilter oldFilter = getFurnitureFilter();
+      JViewport viewport = getParent() instanceof JViewport ? (JViewport)getParent() : null;
+      Point viewPosition = viewport != null ? viewport.getViewPosition() : null;
       Home home = (Home)((FurnitureTreeTableModel)getModel()).getRoot();
       // Model changes during printing must not alter the home's selected furniture.
       getSelectionModel().removeListSelectionListener(this.tableSelectionListener);
@@ -826,6 +829,9 @@ public class FurnitureTable extends JTable implements View, Printable {
           setFurnitureFilter(oldFilter);
         }
         updateTableSelectedFurniture(home);
+        if (viewport != null) {
+          viewport.setViewPosition(viewPosition);
+        }
       }
     } else {
       // Print synchronously table in Event Dispatch Thread
