@@ -765,11 +765,12 @@ public class FurnitureTable extends JTable implements View, Printable {
       TableColumn printableColumn = new TableColumn();
       printableColumn.setIdentifier(tableColumn.getIdentifier());
       printableColumn.setHeaderValue(tableColumn.getHeaderValue());
+      final TableCellRenderer cellRenderer = tableColumn.getIdentifier() == HomePieceOfFurniture.SortableProperty.NAME
+          ? getPrintableNameRenderer() : tableColumn.getCellRenderer();
       TableCellRenderer printableCellRenderer = new TableCellRenderer() {
           public Component getTableCellRendererComponent(JTable table, Object value, 
                                  boolean isSelected, boolean hasFocus, int row, int column) {
             // Delegate rendering to existing cell renderer 
-            TableCellRenderer cellRenderer = tableColumn.getCellRenderer();
             Component rendererComponent = cellRenderer.getTableCellRendererComponent(table, value, 
                 isSelected, hasFocus, row, column);
             if (rendererComponent instanceof JCheckBox) {
@@ -789,6 +790,34 @@ public class FurnitureTable extends JTable implements View, Printable {
       printableColumnModel.addColumn(printableColumn);
     }    
     return print(g, pageFormat, pageIndex, printableColumnModel, Color.BLACK);
+  }
+
+  /**
+   * Renders printed names from row values rather than cached on-screen tree paths.
+   */
+  private TableCellRenderer getPrintableNameRenderer() {
+    return new DefaultTableCellRenderer() {
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value,
+            boolean isSelected, boolean hasFocus, int row, int column) {
+          HomePieceOfFurniture piece = (HomePieceOfFurniture)value;
+          super.getTableCellRendererComponent(table, piece.getName(), false, false, row, column);
+          Content icon = piece instanceof HomeFurnitureGroup
+              ? TreeTableNameCellRenderer.GROUP_ICON_CONTENT : piece.getIcon();
+          setIcon(IconManager.getInstance().getIcon(icon, table.getRowHeight() - table.getRowMargin(), table));
+          int printedRow = row >= 0 ? row : ((FurnitureTreeTableModel)table.getModel()).getPieceOfFurnitureIndex(piece);
+          int depth = 0;
+          for (int parentRow = 0; parentRow < printedRow; parentRow++) {
+            Object parent = table.getValueAt(parentRow, 0);
+            if (parent instanceof HomeFurnitureGroup
+                && ((HomeFurnitureGroup)parent).getAllFurniture().contains(piece)) {
+              depth++;
+            }
+          }
+          setBorder(BorderFactory.createEmptyBorder(0, 2 + depth * 16, 0, 2));
+          return this;
+        }
+      };
   }
 
   /**
