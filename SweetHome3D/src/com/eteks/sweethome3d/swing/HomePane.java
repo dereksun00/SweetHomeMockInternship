@@ -1365,7 +1365,7 @@ public class HomePane extends JRootPane implements HomeView {
     ButtonGroup sortButtonGroup = new ButtonGroup();
     for (Map.Entry<HomePieceOfFurniture.SortableProperty, Action> entry : sortActions.entrySet()) {
       final HomePieceOfFurniture.SortableProperty furnitureProperty = entry.getKey();
-      Action sortAction = entry.getValue();
+      final Action sortAction = entry.getValue();
       JRadioButtonMenuItem sortMenuItem = new JRadioButtonMenuItem();
       // Use a special model for sort radio button menu item that is selected if
       // home is sorted on furnitureProperty criterion
@@ -1376,7 +1376,16 @@ public class HomePane extends JRootPane implements HomeView {
           }
         }); 
       // Configure check box menu item action after setting its model to avoid losing its mnemonic
-      sortMenuItem.setAction(new ResourceAction.MenuItemAction(sortAction));
+      sortMenuItem.setAction(new ResourceAction.MenuItemAction(sortAction) {
+          @Override
+          public Object getValue(String key) {
+            if (furnitureProperty == HomePieceOfFurniture.SortableProperty.VOLUME
+                && Action.SHORT_DESCRIPTION.equals(key)) {
+              return sortAction.getValue(key);
+            }
+            return super.getValue(key);
+          }
+        });
       sortMenu.add(sortMenuItem);
       sortButtonGroup.add(sortMenuItem);
     }
